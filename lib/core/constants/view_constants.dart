@@ -4,6 +4,9 @@ class ViewConstants {
   static const String serverError = 'serverError';
   static const String invalidResponse = 'invalidResponse';
 
+  // Info Messages
+  static const String noEmailAppAvailable = "noEmailAppAvailable";
+
   // Constants
   static const String newVersionTitle = 'newVersionTitle';
   static const String newVersionDescription = 'newVersionDescription';

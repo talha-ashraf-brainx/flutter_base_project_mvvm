@@ -14,8 +14,8 @@ import '../config/config.dart';
 import '../core/constants/app_assets.dart';
 import '../core/constants/app_constants.dart';
 import '../core/constants/view_constants.dart';
+import '../core/utils/helpers.dart';
 import '../main.dart';
-import '../viewmodels/providers/info_provider.dart';
 import '../viewmodels/theme_provider.dart';
 import '../widgets/custom_cupertino_switch.dart';
 import '../widgets/custom_modal_progress_hud.dart';
@@ -153,31 +153,6 @@ class _SettingsState extends State<Settings> {
 
   void termsAndConditions() {
     _launchUrl(Config.termsOfUseUrl);
-  }
-
-  String? encodeQueryParameters(Map<String, String> params) {
-    return params.entries
-        .map((MapEntry<String, String> e) =>
-            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-        .join('&');
-  }
-
-  void contactUs() async {
-    final deviceInfo = context.read<InfoProvider>().deviceInfo;
-    final Uri emailLaunchUri = Uri(
-        query: deviceInfo == null
-            ? null
-            : encodeQueryParameters({
-                'body':
-                    'Device: ${deviceInfo.deviceName}\n App Version: ${deviceInfo.appVersion}\n Build Number: ${deviceInfo.buildNumber}\n OS Version: ${deviceInfo.osVersion}\n Country: ${deviceInfo.country}\n\n',
-              }),
-        scheme: AppConstants.emailScheme,
-        path: Config.contactUsEmail);
-    try {
-      await launchUrl(emailLaunchUri, mode: LaunchMode.externalApplication);
-    } catch (e) {
-      debugPrint(e.toString());
-    }
   }
 
   void rateApp() async {
