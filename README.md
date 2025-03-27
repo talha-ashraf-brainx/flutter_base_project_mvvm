@@ -55,3 +55,42 @@ Ensure you have the following installed:
 3. **Review and Configure the Project**:
    - Check all the `TODO` comments in the project.
    - Update the `config.dart` file as required.
+
+---
+
+## Unexpected Error While Running the Project
+
+Sometimes, you might encounter an unexpected error while running the project, as shown below:
+
+![Unexpected Error](assets/errors/rangeError.png)
+
+This error originates from the **easy_localization_loader** package and occurs while loading the `translations.csv` file.
+
+## Quick Fix:
+
+To resolve this issue, you can try one of the following solutions:
+
+### 1. Restore the `translations.csv` File Using Git
+
+Run the following command to remove all staged changes for the `translations.csv` file and restore it to the last committed version:
+
+```sh
+git checkout assets/translations/translations.csv
+```
+
+Sometimes, this alone can resolve the issue.
+
+### 2. Regenerate the CSV File
+
+If the first solution doesn’t work, follow these steps to regenerate a valid `translations.csv` file:
+
+1. Open your `translations.csv` file and copy its entire content.
+2. Go to [TableConvert CSV Generator](https://tableconvert.com/csv-generator).
+3. Paste the copied content into the input field.
+4. Ensure **CSV** is selected as the output format.
+5. Click the **Download** button.
+
+Refer to the image below for step-by-step guidance:
+
+![Solution Screenshot](assets/errors/solutionRangeError.png)
+
