@@ -8,14 +8,8 @@ class ErrorHandler {
   static Future<DataState<T>> onNetworkRequest<T>({
     String? referrence,
     required Future<dynamic> Function() fetch,
-    FutureOr<T> Function(dynamic)? serialize,
   }) async {
     try {
-      if (serialize != null) {
-        final response = await fetch();
-        return DataSuccess<T>(await serialize(response));
-      }
-
       final response = await fetch() as T;
       return DataSuccess<T>(response);
     } on RestfulRequestException catch (e, s) {
