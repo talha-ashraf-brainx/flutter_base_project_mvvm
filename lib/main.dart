@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -8,6 +9,7 @@ import 'package:easy_localization_loader/easy_localization_loader.dart';
 import 'package:flutter_base_project_mvvm/firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
 import 'config/config.dart';
@@ -22,6 +24,8 @@ import 'viewmodels/theme_provider.dart';
 import 'views/splash.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
+late List<CameraDescription> cameras;
+final logger = Logger();
 
 Future<bool> _loadEnv() async {
   try {
@@ -58,6 +62,7 @@ void main() async {
 
   await initializeDependencies();
   await switchToPortraitMode();
+  cameras = await availableCameras();
   try {
     if (Config.debug) {
       FlavorConfig(name: "DEBUG", location: BannerLocation.topEnd);

@@ -1,24 +1,32 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import '../../../core/constants/view_constants.dart';
+import '../../../core/resources/custom_exceptions.dart';
+import '../../../core/resources/interceptors/retry_on_disconnect.dart';
 import 'api_manager.dart';
-import 'package:http/http.dart' as http;
 
-class ApiManagerImpl extends ApiManager {
+class DioApiManager extends ApiManager {
   @override
   final String baseUrl;
+  final Dio _dio = Dio();
 
-  ApiManagerImpl(this.baseUrl);
+  DioApiManager(this.baseUrl) {
+    _dio.interceptors.add(
+        RetryOnDisconnectInterceptor(dio: _dio, connectivity: Connectivity()));
+  }
 
   @override
   Future<dynamic> get(String endpoint, {Map<String, String>? headers}) async {
-    final url = Uri.parse('$baseUrl$endpoint');
+    final url = '$baseUrl$endpoint';
     final response = await _onRequest(
-        fetch: () async =>
-            await http.get(url, headers: _mergeHeaders(headers)));
+      fetch: () async => await _dio.get(url,
+          options: Options(headers: _mergeHeaders(headers))),
+    );
     return response;
   }
 
@@ -28,10 +36,14 @@ class ApiManagerImpl extends ApiManager {
     Map<String, String>? headers,
     Map<String, dynamic>? body,
   }) async {
-    final url = Uri.parse('$baseUrl$endpoint');
+    final url = '$baseUrl$endpoint';
     final response = await _onRequest(
-        fetch: () async => await http.post(url,
-            headers: _mergeHeaders(headers), body: jsonEncode(body)));
+      fetch: () async => await _dio.post(
+        url,
+        data: jsonEncode(body),
+        options: Options(headers: _mergeHeaders(headers)),
+      ),
+    );
     return response;
   }
 
@@ -41,20 +53,27 @@ class ApiManagerImpl extends ApiManager {
     Map<String, String>? headers,
     Map<String, dynamic>? body,
   }) async {
-    final url = Uri.parse('$baseUrl$endpoint');
+    final url = '$baseUrl$endpoint';
     final response = await _onRequest(
-        fetch: () async => await http.put(url,
-            headers: _mergeHeaders(headers), body: jsonEncode(body)));
+      fetch: () async => await _dio.put(
+        url,
+        data: jsonEncode(body),
+        options: Options(headers: _mergeHeaders(headers)),
+      ),
+    );
     return response;
   }
 
   @override
   Future<dynamic> delete(String endpoint,
       {Map<String, String>? headers}) async {
-    final url = Uri.parse('$baseUrl$endpoint');
+    final url = '$baseUrl$endpoint';
     final response = await _onRequest(
-        fetch: () async =>
-            await http.delete(url, headers: _mergeHeaders(headers)));
+      fetch: () async => await _dio.delete(
+        url,
+        options: Options(headers: _mergeHeaders(headers)),
+      ),
+    );
     return response;
   }
 
@@ -63,16 +82,20 @@ class ApiManagerImpl extends ApiManager {
     String endpoint,
     File file, {
     Map<String, String>? headers,
+    Function(int, int)? onProgress,
+    String field = 'image',
   }) async {
-    final url = Uri.parse('$baseUrl$endpoint');
+    final url = '$baseUrl$endpoint';
     final response = await _onRequest(fetch: () async {
-      final request = http.MultipartRequest('POST', url);
-      request.headers.addAll(_mergeHeaders(headers));
-      request.files.add(await http.MultipartFile.fromPath('image', file.path));
-
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      return response;
+      final formData = FormData.fromMap({
+        field: await MultipartFile.fromFile(file.path),
+      });
+      return await _dio.post(
+        url,
+        data: formData,
+        options: Options(headers: _mergeHeaders(headers)),
+        onSendProgress: (int sent, int total) => onProgress?.call(sent, total),
+      );
     });
     return response;
   }
@@ -84,26 +107,28 @@ class ApiManagerImpl extends ApiManager {
     };
   }
 
-  dynamic _handleResponse(http.Response response) {
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return jsonDecode(response.body);
+  dynamic _handleResponse(Response response) {
+    if (response.statusCode != null &&
+        response.statusCode! >= 200 &&
+        response.statusCode! < 300) {
+      return response.data;
     } else {
       dynamic errorMessage;
       try {
-        final decoded = jsonDecode(response.body);
-        // TODO: Add error message from server
+        final decoded = response.data;
+        // TODO: Add error message key from server here
         errorMessage = decoded['msg'] ?? decoded['error'];
       } catch (e, s) {
         _handleInvalidResponseException(
-            response.statusCode, e, s, response.body);
+            response.statusCode ?? 0, e, s, response.data);
       }
 
-      _handleErrorMessageFromServer(response.statusCode, errorMessage);
+      _handleErrorMessageFromServer(response.statusCode ?? 0, errorMessage);
     }
   }
 
   void _handleHttpRequestException(Object error, StackTrace stackTrace) {
-    throw HttpRequestException(
+    throw RestfulRequestException(
         message: ViewConstants.serverError.tr(),
         error: error,
         stackTrace: stackTrace);
@@ -124,7 +149,7 @@ class ApiManagerImpl extends ApiManager {
   }
 
   Future<dynamic> _onRequest(
-      {required Future<http.Response> Function() fetch}) async {
+      {required Future<Response> Function() fetch}) async {
     try {
       final response = await fetch();
       return _handleResponse(response);
@@ -136,32 +161,4 @@ class ApiManagerImpl extends ApiManager {
       _handleHttpRequestException(e, s);
     }
   }
-}
-
-class HttpRequestException implements Exception {
-  final String message;
-  final Object error;
-  final StackTrace stackTrace;
-  HttpRequestException(
-      {required this.message, required this.error, required this.stackTrace});
-}
-
-class InvalidServerResponseException implements Exception {
-  final String message;
-  final int? statusCode;
-  final Object? error;
-  final StackTrace? stackTrace;
-  final dynamic response;
-  InvalidServerResponseException(
-      {required this.message,
-      this.statusCode,
-      this.error,
-      this.stackTrace,
-      this.response});
-}
-
-class ErrorMessageFromServer implements Exception {
-  final String message;
-  final int statusCode;
-  ErrorMessageFromServer({required this.message, required this.statusCode});
 }

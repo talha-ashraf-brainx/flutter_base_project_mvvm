@@ -7,6 +7,8 @@ class DarkTheme implements BaseTheme {
   @override
   final Color primary = const Color(0xFF2DAE77);
   @override
+  final Color onPrimary = const Color(0xFFFFFFFF);
+  @override
   final Color background = const Color(0xFF1E1E1E);
   @override
   final Color primaryText = const Color(0xFFFFFFFF);

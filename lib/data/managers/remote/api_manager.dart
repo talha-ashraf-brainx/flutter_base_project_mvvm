@@ -28,5 +28,7 @@ abstract class ApiManager {
     String endpoint,
     File file, {
     Map<String, String>? headers,
+    Function(int, int)? onProgress,
+    String field = '',
   });
 }

@@ -10,7 +10,7 @@ import 'core/services/firebase_remote_config.dart';
 import 'data/managers/local/local_storage.dart';
 import 'data/managers/local/shared_preference.dart';
 import 'data/managers/remote/api_manager.dart';
-import 'data/managers/remote/api_manager_impl.dart';
+import 'data/managers/remote/dio_api_manager.dart';
 import 'data/repositories/local/language.dart';
 import 'data/repositories/local/theme.dart';
 import 'data/repositories/remote/settings/country.dart';
@@ -46,7 +46,7 @@ Future<void> initializeDependencies() async {
       firebaseRemoteConfigService);
 
   // Managers
-  sl.registerSingleton<ApiManager>(ApiManagerImpl(AppConstants.countryUrl),
+  sl.registerSingleton<ApiManager>(DioApiManager(AppConstants.countryUrl),
       instanceName: AppConstants.countryUrl);
 
   // Register Dependencies

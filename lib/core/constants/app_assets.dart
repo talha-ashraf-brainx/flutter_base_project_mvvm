@@ -15,4 +15,7 @@ class AppAssets {
   static const String moon = "$_icons/moon.svg";
   static const String home = "$_icons/home.svg";
   static const String search = "$_icons/search.svg";
+  static const String galleryButton = "$_icons/galleryButton.svg";
+  static const String captureButton = "$_icons/captureButton.svg";
+  static const String backButton = "$_icons/backButton.svg";
 }

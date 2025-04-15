@@ -3,6 +3,8 @@ class ViewConstants {
   static const String noInternet = 'noInternet';
   static const String serverError = 'serverError';
   static const String invalidResponse = 'invalidResponse';
+  static const String errorOpeningCamera = 'errorOpeningCamera';
+  static const String cameraAccessDenied = 'cameraAccessDenied';
 
   // Info Messages
   static const String noEmailAppAvailable = "noEmailAppAvailable";
@@ -27,4 +29,5 @@ class ViewConstants {
   static const String home = "home";
   static const String search = "search";
   static const String more = "more";
+  static const String cropImage = "cropImage";
 }
