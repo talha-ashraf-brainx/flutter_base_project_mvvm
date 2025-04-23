@@ -8,24 +8,31 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/constants/view_constants.dart';
 import '../../../core/resources/custom_exceptions.dart';
 import '../../../core/resources/interceptors/retry_on_disconnect.dart';
+import '../local/custom_cache_manager.dart';
 import 'api_manager.dart';
 
 class DioApiManager extends ApiManager {
   @override
   final String baseUrl;
+
+  @override
+  final CustomCacheManager cacheManager;
+
   final Dio _dio = Dio();
 
-  DioApiManager(this.baseUrl) {
+  DioApiManager(this.baseUrl, this.cacheManager) {
     _dio.interceptors.add(
         RetryOnDisconnectInterceptor(dio: _dio, connectivity: Connectivity()));
   }
 
   @override
-  Future<dynamic> get(String endpoint, {Map<String, String>? headers}) async {
-    final url = '$baseUrl$endpoint';
+  Future<dynamic> get(String endpoint,
+      {Map<String, String>? headers, Function(dynamic)? onCached}) async {
     final response = await _onRequest(
-      fetch: () async => await _dio.get(url,
+      endpoint,
+      fetch: (url) async => await _dio.get(url,
           options: Options(headers: _mergeHeaders(headers))),
+      onCached: onCached,
     );
     return response;
   }
@@ -35,14 +42,16 @@ class DioApiManager extends ApiManager {
     String endpoint, {
     Map<String, String>? headers,
     Map<String, dynamic>? body,
+    Function(dynamic)? onCached,
   }) async {
-    final url = '$baseUrl$endpoint';
     final response = await _onRequest(
-      fetch: () async => await _dio.post(
+      endpoint,
+      fetch: (url) async => await _dio.post(
         url,
         data: jsonEncode(body),
         options: Options(headers: _mergeHeaders(headers)),
       ),
+      onCached: onCached,
     );
     return response;
   }
@@ -52,27 +61,30 @@ class DioApiManager extends ApiManager {
     String endpoint, {
     Map<String, String>? headers,
     Map<String, dynamic>? body,
+    Function(dynamic)? onCached,
   }) async {
-    final url = '$baseUrl$endpoint';
     final response = await _onRequest(
-      fetch: () async => await _dio.put(
+      endpoint,
+      fetch: (url) async => await _dio.put(
         url,
         data: jsonEncode(body),
         options: Options(headers: _mergeHeaders(headers)),
       ),
+      onCached: onCached,
     );
     return response;
   }
 
   @override
   Future<dynamic> delete(String endpoint,
-      {Map<String, String>? headers}) async {
-    final url = '$baseUrl$endpoint';
+      {Map<String, String>? headers, Function(dynamic)? onCached}) async {
     final response = await _onRequest(
-      fetch: () async => await _dio.delete(
+      endpoint,
+      fetch: (url) async => await _dio.delete(
         url,
         options: Options(headers: _mergeHeaders(headers)),
       ),
+      onCached: onCached,
     );
     return response;
   }
@@ -84,19 +96,24 @@ class DioApiManager extends ApiManager {
     Map<String, String>? headers,
     Function(int, int)? onProgress,
     String field = 'image',
+    Function(dynamic)? onCached,
   }) async {
-    final url = '$baseUrl$endpoint';
-    final response = await _onRequest(fetch: () async {
-      final formData = FormData.fromMap({
-        field: await MultipartFile.fromFile(file.path),
-      });
-      return await _dio.post(
-        url,
-        data: formData,
-        options: Options(headers: _mergeHeaders(headers)),
-        onSendProgress: (int sent, int total) => onProgress?.call(sent, total),
-      );
-    });
+    final response = await _onRequest(
+      endpoint,
+      fetch: (url) async {
+        final formData = FormData.fromMap({
+          field: await MultipartFile.fromFile(file.path),
+        });
+        return await _dio.post(
+          url,
+          data: formData,
+          options: Options(headers: _mergeHeaders(headers)),
+          onSendProgress: (int sent, int total) =>
+              onProgress?.call(sent, total),
+        );
+      },
+      onCached: onCached,
+    );
     return response;
   }
 
@@ -127,7 +144,7 @@ class DioApiManager extends ApiManager {
     }
   }
 
-  void _handleHttpRequestException(Object error, StackTrace stackTrace) {
+  void _handleRestfulRequestException(Object error, StackTrace stackTrace) {
     throw RestfulRequestException(
         message: ViewConstants.serverError.tr(),
         error: error,
@@ -148,17 +165,23 @@ class DioApiManager extends ApiManager {
     throw ErrorMessageFromServer(statusCode: statusCode, message: message);
   }
 
-  Future<dynamic> _onRequest(
-      {required Future<Response> Function() fetch}) async {
+  Future<dynamic> _onRequest(String endpoint,
+      {required Future<Response> Function(String url) fetch,
+      required Function(dynamic)? onCached}) async {
     try {
-      final response = await fetch();
-      return _handleResponse(response);
+      final url = '$baseUrl$endpoint';
+      final cachedData = cacheManager.getCache<dynamic>(key: url);
+      if (cachedData != null) onCached?.call(cachedData);
+      final response = await fetch(url);
+      final data = _handleResponse(response);
+      cacheManager.setCache(key: url, value: data);
+      return data;
     } on InvalidServerResponseException {
       rethrow;
     } on ErrorMessageFromServer {
       rethrow;
     } catch (e, s) {
-      _handleHttpRequestException(e, s);
+      _handleRestfulRequestException(e, s);
     }
   }
 }
