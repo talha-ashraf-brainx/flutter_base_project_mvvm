@@ -1,37 +1,54 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 import '../../config/config.dart';
 import '../../main.dart';
 
 class Responsive {
-  static double w(double pixelWidth) =>
-      (pixelWidth / Config.designScreenWidth) *
-      MediaQuery.of(navigatorKey.currentContext!).size.width;
+  static double w(double designWidthUnit) => _scaleWidth(designWidthUnit);
+  static double h(double designHeightUnit) => _scaleHeight(designHeightUnit);
+  static double d(double designUnit) =>
+      min(_scaleWidth(designUnit), _scaleHeight(designUnit));
+  static double r(double designUnit) => d(designUnit) / 2;
 
-  static double h(double pixelHeight) =>
-      (pixelHeight / Config.designScreenHeight) *
-      MediaQuery.of(navigatorKey.currentContext!).size.height;
+  static double f(
+    double designFontSize, {
+    double widthBreakpoint = 600.0,
+    double heightBreakpoint = 900.0,
+  }) {
+    final (double w, double h) = _size();
+    final cappedWidth = w > widthBreakpoint ? widthBreakpoint : w;
+    final cappedHeight = h > heightBreakpoint ? heightBreakpoint : h;
 
-  static double f(double pixelWidth, {double breakpoint = 600.0}) {
-    final screenWidth = MediaQuery.of(navigatorKey.currentContext!).size.width;
-    return (pixelWidth / Config.designScreenWidth) *
-        (screenWidth > breakpoint ? breakpoint : screenWidth);
+    const designWidth = Config.designScreenWidth;
+    const designHeight = Config.designScreenHeight;
+
+    final designDiagonal =
+        sqrt(designWidth * designWidth + designHeight * designHeight);
+    final deviceDiagonal =
+        sqrt(cappedWidth * cappedWidth + cappedHeight * cappedHeight);
+
+    return (designFontSize / designDiagonal) * deviceDiagonal;
   }
 
-  // Width with startpoint
-  static double ws(double pixelWidth, {double startpoint = 480.0}) {
-    final screenWidth = MediaQuery.of(navigatorKey.currentContext!).size.width;
-    return screenWidth <= startpoint
-        ? pixelWidth
-        : (pixelWidth / Config.designScreenWidth) * screenWidth;
+  static double _scaleWidth(double designWidthUnit) {
+    final (double w, _) = _size();
+    return designWidthUnit * w / Config.designScreenWidth;
   }
 
-  // Height with startpoint
-  static double hs(double pixelHeight, {double startpoint = 640.0}) {
-    final screenHeight =
-        MediaQuery.of(navigatorKey.currentContext!).size.height;
-    return screenHeight <= startpoint
-        ? pixelHeight
-        : (pixelHeight / Config.designScreenWidth) * screenHeight;
+  static double _scaleHeight(double designHeightUnit) {
+    final (_, double h) = _size();
+    return designHeightUnit * h / Config.designScreenHeight;
+  }
+
+  static (double w, double h) _size() {
+    final context = navigatorKey.currentContext!;
+    final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
+
+    final height = size.height - padding.vertical;
+    final width = size.width - padding.horizontal;
+
+    return (width, height);
   }
 }

@@ -42,6 +42,7 @@ dependencies:
   flutter_image_compress: ^2.4.0
   image_cropper: ^9.1.0
   dio: ^5.8.0+1
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -52,14 +53,14 @@ dev_dependencies:
 # You can use your app background color here but then also change the icon (as currently its a blank background colored image) 
 flutter_native_splash:
   color: "#1E1E1E"
-  image: "assets/icons/splash_icon.png"
+  image: "assets/images/splash_icon.png"
   android: true
   ios: true
   web: false
   android_12:
     color: "#1E1E1E"
     icon_background_color: "#1E1E1E"
-    image: "assets/icons/splash_icon.png"
+    image: "assets/images/splash_icon.png"
 
 flutter:
   uses-material-design: true
@@ -74,12 +75,6 @@ flutter:
   fonts:
     - family: Inter
       fonts:
-      - asset: assets/fonts/Inter_18pt-ExtraLight.ttf
-      - asset: assets/fonts/Inter_18pt-Light.ttf
-      - asset: assets/fonts/Inter_18pt-Medium.ttf
       - asset: assets/fonts/Inter_18pt-Regular.ttf
-      - asset: assets/fonts/Inter_18pt-Bold.ttf
-      - asset: assets/fonts/Inter_18pt-SemiBold.ttf
-      - asset: assets/fonts/Inter_18pt-ExtraBold.ttf
 
 

@@ -32,4 +32,7 @@ class Config {
   static const String privacyPolicyUrl = '';
   static const String termsOfUseUrl = '';
   static const String contactUsEmail = '';
+  // TODO: Update this flag after firebase setup
+  // TODO: Use flutterfire cli for firebase setup and override current implementations
+  static const bool firebaseEnabled = false;
 }

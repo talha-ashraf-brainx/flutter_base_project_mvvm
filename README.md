@@ -1,111 +1,136 @@
-# Flutter Base Project
+# Flutter Base Project MVVM
 
-## Overview
-This Flutter project provides a robust foundation with the following features available out of the box:
+A robust Flutter foundation with comprehensive features for modern mobile app development.
 
-- **Localization Support**: Multi-language support is integrated.
-- **Light & Dark Themes**: Toggle between light and dark mode from settings.
-- **Splash Screens**: Native and custom splash screens are set up.
-- **MVVM Architecture**: Uses `get_it` for dependency injection.
-- **Navigation**: Configured using `Navigator`.
-- **Responsive Design**: Extensions on `int` and `double` for responsive UI (e.g., `10.h`, `20.0.w`).
-- **State Management**: Uses `Provider`, but can be replaced with other state management solutions.
-- **Keyboard Action Function**: Enhances user experience while handling input fields.
-- **.env Support**: Secure API keys and environment configurations.
-- **Debug Flavor**: Preconfigured for development and debugging.
+## 🚀 Core Features
 
-## 🔧 Recently Added Features
+- **MVVM Architecture** with `get_it` dependency injection
+- **Multi-language Support** via `easy_localization`
+- **Light & Dark Themes** with seamless switching
+- **Responsive Design** with extensions (`10.h`, `20.0.w`)
+- **State Management** using `Provider`
+- **Environment Configuration** with `.env` support
+- **Debug Flavor** for development
+- **Keyboard Actions** for enhanced input field UX
+- **Custom Modal Progress HUD** for loading indicators
+- **Animated Bottom Navigation** with `flutter_animate`
 
-- ✅ **Camera View, Image Picker & Editor Mixins**
-  - Mixin-based approach to reuse image capture and editing logic.
-  - Supports image picking from camera or gallery.
-  - Includes image cropping and resolution-based compression.
-  - Supports **exact scale-down based on original image aspect ratio** for precision editing.
+## 🔧 Recent Updates
 
-- ✅ **Switched API Manager from `http` to `dio`**
-  - All network operations now use `dio` for enhanced flexibility.
-  - **Progress-based image upload** support included.
-  - Cleaner error handling with Dio interceptors.
+### ✅ **Enhanced Router System**
+- **Named Routes** with type-safe navigation
+- **Centralized Route Management** in `AppRoutes` enum
+- **Deep Linking Support** with `onGenerateRoute`
+- **Navigation Utilities** for push, replace, and remove operations
 
-- ✅ **Retry Interceptor on Disconnect**
-  - Automatically retries failed requests once the device regains internet connectivity.
-  - Ensures smooth user experience even with unstable networks.
+### ✅ **Platform Optimizations**
+- **Android**: Migrated to Kotlin DSL (`build.gradle.kts`)
+- **iOS**: Updated to latest configurations
+- **Removed**: Linux, macOS, Windows, and Web platforms for mobile focus
+- **Splash Screen**: Custom splash icon with native implementation
 
-## ⚙️ Settings Page
+### ✅ **Image & Camera Features**
+- **Camera Integration** with `camera` package
+- **Image Picker** from gallery or camera
+- **Image Cropping** with `image_cropper`
+- **Compression** with `flutter_image_compress`
+- **Aspect Ratio Correction** - maintains desired preview ratio
+- **Mixin-based** reusable image logic
 
-- Privacy Policy  
-- Terms of Use  
-- Rate App  
-- Share App  
-- Contact Us (auto-fills device info, country, and app package info)
+### ✅ **Network & API**
+- **Dio HTTP Client** with interceptors
+- **Retry Logic** for network disconnections
+- **Progress-based Uploads** for files
+- **Enhanced Error Handling**
 
-## 📦 Other Integrations
+### ✅ **Firebase Integration**
+- **Remote Config** with forced update popup
+- **Analytics & Crashlytics** for monitoring
+- **AdMob Integration** for monetization
+- **Forced Update System** with version checking
 
-- **API Manager**: Now uses `dio` with retry logic and file upload.
-- **Firebase Remote Config**: Ready-to-use forced update popup implementation.
-- **Firebase Analytics & Crashlytics**: Integrated for performance monitoring and crash reporting.
-- **AdMob Ads Manager**: Configured to manage ads effectively.
-- **Animated Bottom Navigation Bar**: Uses `flutter_animate` for smooth animations.
-- **Fonts & Icons**: Custom fonts and icon support included.
-- **Local Storage Manager**: Uses `shared_preferences` for persistent local storage.
-- **Custom Modal Progress HUD**: Displays loading indicators elegantly.
+## 📱 Settings Features
 
----
+- **Privacy Policy & Terms of Use** - External URL launching
+- **Rate App** - In-app review integration
+- **Share App** - Platform-specific store links
+- **Contact Us** - Auto-fills device info, country, and app details
+- **Theme switching** - Light/Dark mode toggle
 
-## 🚀 Getting Started
+## 🛠️ Setup
 
 ### Prerequisites
-
-Ensure you have the following installed:
 - Flutter SDK
 - Dart SDK
-- Firebase CLI (`flutterfire` CLI)
+- Firebase CLI
 
-### Setup Instructions
+### Quick Start
 
-1. **Create a `.env` file** in the root folder and add the following:
-   ```env
-   DEBUG=true
+1. **Environment Setup**
+   ```bash
+   # Create .env file
+   echo "DEBUG=true" > .env
    ```
 
-2. **Firebase Setup**:
-   - The project includes a `firebase_options` file with test keys.
-   - Run the following command to set up Firebase in your project:
-     ```sh
-     flutterfire configure
-     ```
-   - Override the existing Firebase configuration with your own.
+2. **Firebase Configuration**
+   ```bash
+   flutterfire configure
+   ```
 
-3. **Review and Configure the Project**:
-   - Check all the `TODO` comments in the project.
-   - Update the `config.dart` file as required.
+3. **Run the Project**
+   ```bash
+   flutter pub get
+   flutter run
+   ```
 
----
+## 🐛 Troubleshooting
 
-## 🐞 Unexpected Error While Running the Project
-
-Sometimes, you might encounter an unexpected error while running the project, as shown below:
+### Translation CSV Error
+If you encounter a range error with `translations.csv`:
 
 ![Unexpected Error](assets/errors/rangeError.png)
 
-This error originates from the **easy_localization_loader** package and occurs while loading the `translations.csv` file.
-
-### 🔧 Quick Fix
-
-#### Option 1: Restore the `translations.csv` File Using Git
-
-```sh
+**Quick Fix:**
+```bash
 git checkout assets/translations/translations.csv
 ```
 
-#### Option 2: Regenerate the CSV File
-
-1. Open your `translations.csv` file and copy its entire content.
-2. Go to [TableConvert CSV Generator](https://tableconvert.com/csv-generator).
-3. Paste the copied content into the input field.
-4. Ensure **CSV** is selected as the output format.
-5. Click the **Download** button.
-
-Refer to the image below for step-by-step guidance:
+**Regenerate CSV:**
+1. Copy your `translations.csv` content
+2. Go to [TableConvert CSV Generator](https://tableconvert.com/csv-generator)
+3. Paste content and download as CSV
 
 ![Solution Screenshot](assets/errors/solutionRangeError.png)
+
+## 📦 Dependencies
+
+- **State Management**: `provider`, `get_it`
+- **UI**: `flutter_animate`, `gap`, `flutter_svg`, `fluttertoast`
+- **Networking**: `dio`, `connectivity_plus`
+- **Storage**: `shared_preferences`, `path_provider`
+- **Media**: `camera`, `image_picker`, `image_cropper`, `flutter_image_compress`
+- **Firebase**: `firebase_core`, `firebase_analytics`, `firebase_crashlytics`, `firebase_remote_config`
+- **Localization**: `easy_localization`
+- **Device Info**: `package_info_plus`, `device_info_plus`
+- **Utilities**: `in_app_review`, `share_plus`, `url_launcher`, `keyboard_actions`
+
+## 📁 Project Structure
+
+```
+lib/
+├── config/
+│   ├── router/          # Named routes & navigation
+│   └── config.dart      # App configuration
+├── core/
+│   ├── extensions/      # Responsive extensions
+│   ├── services/        # Firebase services
+│   └── utils/           # Helper utilities
+├── views/
+│   ├── mixins/          # Reusable mixins
+│   └── *.dart           # Screen implementations
+└── widgets/             # Reusable components
+```
+
+---
+
+**Note**: This project is optimized for mobile development (iOS/Android) with all desktop and web platforms removed for cleaner maintenance.

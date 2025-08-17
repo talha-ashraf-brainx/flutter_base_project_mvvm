@@ -43,8 +43,10 @@ Future<void> initializeDependencies() async {
 
   final firebaseRemoteConfigService =
       await FirebaseRemoteConfigService().init();
-  sl.registerSingleton<FirebaseRemoteConfigService>(
-      firebaseRemoteConfigService);
+  if (firebaseRemoteConfigService != null) {
+    sl.registerSingleton<FirebaseRemoteConfigService>(
+        firebaseRemoteConfigService);
+  }
 
   // Managers
   sl.registerSingleton<LocalStorageManager>(

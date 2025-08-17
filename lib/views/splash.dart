@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../config/app_router.dart';
+import '../config/router/app_router.dart';
+import '../config/router/app_routes.dart';
 import '../viewmodels/theme_provider.dart';
-import 'home.dart';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});
@@ -16,8 +16,11 @@ class _SplashState extends State<Splash> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 2000),
-        () => AppRouter.pushReplacement(context, const Home()));
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      if (mounted) {
+        AppRouter.pushReplacementNamed(context, AppRoutes.home.path);
+      }
+    });
   }
 
   @override

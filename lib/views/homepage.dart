@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_base_project_mvvm/config/app_router.dart';
-import 'package:flutter_base_project_mvvm/views/camera.dart';
+import 'package:flutter_base_project_mvvm/config/router/app_router.dart';
+import 'package:flutter_base_project_mvvm/config/router/app_routes.dart';
 import 'package:flutter_base_project_mvvm/views/mixins/image_editor.dart';
 
 class Homepage extends StatefulWidget {
@@ -43,18 +43,19 @@ class _HomepageState extends State<Homepage> with ImageEditorMixin {
   }
 
   void onCameraTapped() {
-    AppRouter.push(context,
-        CameraView(onImageCaptured: (XFile selectedImage) async {
-      setState(() {
-        isLoading = true;
-      });
-      final croppedFilePath = await cropImage(selectedImage);
-      final compressedImage =
-          await compressImage(File(croppedFilePath ?? selectedImage.path));
-      setState(() {
-        image = compressedImage;
-        isLoading = false;
-      });
-    }));
+    AppRouter.pushNamed(context, AppRoutes.camera.path, arguments: {
+      'onImageCaptured': (XFile selectedImage) async {
+        setState(() {
+          isLoading = true;
+        });
+        final croppedFilePath = await cropImage(selectedImage);
+        final compressedImage =
+            await compressImage(File(croppedFilePath ?? selectedImage.path));
+        setState(() {
+          image = compressedImage;
+          isLoading = false;
+        });
+      }
+    });
   }
 }

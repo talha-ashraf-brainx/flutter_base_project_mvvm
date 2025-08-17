@@ -8,7 +8,6 @@ import 'package:flutter_base_project_mvvm/core/extensions/int.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
-import '../config/app_router.dart';
 import '../core/constants/app_assets.dart';
 import '../core/constants/app_constants.dart';
 import '../viewmodels/theme_provider.dart';
@@ -136,12 +135,19 @@ class _CameraViewState extends State<CameraView> with ImagePickerMixin {
   }
 
   void onCaptureButtonPressed() async {
-    await captureImage(
-        onImageCaptured: (XFile image) => widget.onImageCaptured?.call(image));
+    await captureImage(onImageCaptured: (XFile image) async {
+      final correctedImage = await correctCapturedImage(
+        capturedFile: image,
+        previewAspectRatio: MediaQuery.of(context).size.aspectRatio,
+      );
+      if (correctedImage == null) return;
+
+      widget.onImageCaptured?.call(correctedImage);
+    });
     goBack();
   }
 
   void goBack() {
-    AppRouter.pop(context);
+    Navigator.pop(context);
   }
 }

@@ -44,9 +44,10 @@ void contactUs() async {
       scheme: AppConstants.emailScheme,
       path: Config.contactUsEmail);
 
-  if (await canLaunchUrl(emailLaunchUri)) {
+  try {
     await launchUrl(emailLaunchUri, mode: LaunchMode.externalApplication);
-  } else {
+  } catch (e) {
     showToast(ViewConstants.noEmailAppAvailable);
+    debugPrint('contactUs error: $e');
   }
 }

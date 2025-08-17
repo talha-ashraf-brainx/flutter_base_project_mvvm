@@ -13,6 +13,8 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
 import 'config/config.dart';
+import 'config/router/app_router.dart';
+import 'config/router/app_routes.dart';
 import 'config/languages/language_config.dart';
 import 'core/constants/app_assets.dart';
 import 'core/utils/device_orientation.dart';
@@ -22,6 +24,11 @@ import 'viewmodels/providers/custom_modal_progress_hud.dart';
 import 'viewmodels/providers/info_provider.dart';
 import 'viewmodels/theme_provider.dart';
 import 'views/splash.dart';
+import 'views/home.dart';
+import 'views/homepage.dart';
+import 'views/search.dart';
+import 'views/settings.dart';
+import 'widgets/custom_modal_progress_hud.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 late List<CameraDescription> cameras;
@@ -56,13 +63,25 @@ void main() async {
   }
 
   WidgetsFlutterBinding.ensureInitialized();
-  // TODO: Use flutterfire cli for firebase setup and override current implementations
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  initializeCrashlytics();
+
+  try {
+    if (Config.firebaseEnabled) {
+      await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform);
+      initializeCrashlytics();
+    }
+  } catch (e) {
+    debugPrint('Firebase initialization failed: $e');
+  }
 
   await initializeDependencies();
   await switchToPortraitMode();
-  cameras = await availableCameras();
+  try {
+    cameras = await availableCameras();
+  } catch (e) {
+    debugPrint('Camera initialization failed: $e');
+    cameras = [];
+  }
   try {
     if (Config.debug) {
       FlavorConfig(name: "DEBUG", location: BannerLocation.topEnd);
@@ -116,7 +135,17 @@ class _BaseAppState extends State<BaseApp> {
         locale: context.locale,
         color: themeProvider.baseTheme.primary,
         theme: themeProvider.baseTheme.themeData,
-        home: const Splash(),
+        initialRoute: AppRoutes.splash.path,
+        onGenerateRoute: AppRouter.generateRoute,
+        routes: {
+          AppRoutes.splash.path: (context) => const Splash(),
+          AppRoutes.home.path: (context) => const Home(),
+          AppRoutes.homepage.path: (context) => const Homepage(),
+          AppRoutes.search.path: (context) => const Search(),
+          AppRoutes.settings.path: (context) => const Settings(),
+        },
+        builder: (context, child) =>
+            CustomModalProgressHUD(child: child ?? const SizedBox.shrink()),
       ),
     );
   }

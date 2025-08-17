@@ -9,57 +9,59 @@ import '../../injection_container.dart';
 import '../constants/app_constants.dart';
 
 class FirebaseRemoteConfigService {
-  final remoteConfig = FirebaseRemoteConfig.instance;
+  static final FirebaseRemoteConfig _remoteConfig =
+      FirebaseRemoteConfig.instance;
 
-  Future<FirebaseRemoteConfigService> init() async {
-    final remoteConfig = FirebaseRemoteConfig.instance;
-
-    await remoteConfig.setConfigSettings(
-      RemoteConfigSettings(
-        fetchTimeout: const Duration(minutes: 1),
-        minimumFetchInterval: Config.debug
-            ? const Duration(seconds: 5)
-            : const Duration(hours: 1),
-      ),
-    );
-
-    final packageInfo = sl<PackageInfo>();
-    await remoteConfig.setDefaults(Config.debug
-        ? {
-            AppConstants.requiredMinimumVersionDebug: packageInfo.version,
-            AppConstants.recommendedMinimumVersionDebug: packageInfo.version,
-          }
-        : Platform.isIOS
-            ? {
-                AppConstants.requiredMinimumVersion: packageInfo.version,
-                AppConstants.recommendedMinimumVersion: packageInfo.version,
-              }
-            : {
-                AppConstants.requiredMinimumVersionAndroid: packageInfo.version,
-                AppConstants.recommendedMinimumVersionAndroid:
-                    packageInfo.version,
-              });
+  Future<FirebaseRemoteConfigService?> init() async {
+    if (!Config.firebaseEnabled) return null;
 
     try {
-      await remoteConfig.fetchAndActivate();
+      await _remoteConfig.setConfigSettings(
+        RemoteConfigSettings(
+          fetchTimeout: const Duration(minutes: 1),
+          minimumFetchInterval: Config.debug
+              ? const Duration(seconds: 1)
+              : const Duration(hours: 1),
+        ),
+      );
 
-      remoteConfig.onConfigUpdated.listen((event) async {
-        await remoteConfig.activate();
+      final packageInfo = sl<PackageInfo>();
+      await _remoteConfig.setDefaults(Config.debug
+          ? {
+              AppConstants.requiredMinimumVersionDebug: packageInfo.version,
+              AppConstants.recommendedMinimumVersionDebug: packageInfo.version,
+            }
+          : Platform.isIOS
+              ? {
+                  AppConstants.requiredMinimumVersion: packageInfo.version,
+                  AppConstants.recommendedMinimumVersion: packageInfo.version,
+                }
+              : {
+                  AppConstants.requiredMinimumVersionAndroid:
+                      packageInfo.version,
+                  AppConstants.recommendedMinimumVersionAndroid:
+                      packageInfo.version,
+                });
+
+      await _remoteConfig.fetchAndActivate();
+
+      _remoteConfig.onConfigUpdated.listen((event) async {
+        await _remoteConfig.activate();
       });
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("Error in FirebaseRemoteConfigService: $e");
     }
 
     return this;
   }
 
-  String getRequiredMinimumVersion() => remoteConfig.getString(Config.debug
+  String getRequiredMinimumVersion() => _remoteConfig.getString(Config.debug
       ? AppConstants.requiredMinimumVersionDebug
       : Platform.isIOS
           ? AppConstants.requiredMinimumVersion
           : AppConstants.requiredMinimumVersionAndroid);
 
-  String getRecommendedMinimumVersion() => remoteConfig.getString(Config.debug
+  String getRecommendedMinimumVersion() => _remoteConfig.getString(Config.debug
       ? AppConstants.recommendedMinimumVersionDebug
       : Platform.isIOS
           ? AppConstants.recommendedMinimumVersion

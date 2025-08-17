@@ -6,7 +6,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../config/app_router.dart';
 import '../../config/config.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/view_constants.dart';
@@ -125,7 +124,7 @@ class _ForcedUpdateState extends State<ForcedUpdate> {
   }
 
   void onSkip(BuildContext context) {
-    AppRouter.pop(context);
+    Navigator.pop(context);
     deviceInfoProvider.setSkippedVersion();
   }
 

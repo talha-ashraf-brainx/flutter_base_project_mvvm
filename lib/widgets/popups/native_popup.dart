@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_base_project_mvvm/viewmodels/theme_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../config/app_router.dart';
 import '../../core/constants/app_constants.dart';
 import '../translated_text.dart';
 
@@ -24,6 +23,7 @@ Future<void> showNativePopup(
     builder: (context) => AlertDialog.adaptive(
       title: TranslatedText(title),
       content: TranslatedText(description),
+      backgroundColor: themeProvider.baseTheme.background,
       actions: [
         adaptiveAction(
             context, secondaryActionTitle, secondaryAction, themeProvider),
@@ -50,7 +50,7 @@ Widget adaptiveAction(
     return CupertinoDialogAction(
       isDefaultAction: isDefaultAction,
       onPressed: () {
-        AppRouter.pop(context);
+        Navigator.pop(context);
         action();
       },
       child: TranslatedText(buttonTitle),
@@ -59,7 +59,7 @@ Widget adaptiveAction(
 
   return TextButton(
     onPressed: () {
-      AppRouter.pop(context);
+      Navigator.pop(context);
       action();
     },
     child: TranslatedText(

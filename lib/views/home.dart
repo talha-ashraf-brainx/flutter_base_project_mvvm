@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../config/config.dart';
 import '../core/services/force_update.dart';
-import '../injection_container.dart';
 import '../viewmodels/providers/info_provider.dart';
 import '../viewmodels/theme_provider.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
@@ -27,14 +28,17 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((timestamp) => checkForcedUpdates());
+    WidgetsBinding.instance.addPostFrameCallback((timestamp) {
+      if (Config.firebaseEnabled) {
+        checkForcedUpdates();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final infoProvider = sl<InfoProvider>();
-    final themeProvider = sl<ThemeProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final infoProvider = context.watch<InfoProvider>();
     return Scaffold(
       appBar: appBar(themeProvider, infoProvider),
       body: IndexedStack(

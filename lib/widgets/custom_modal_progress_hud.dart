@@ -8,11 +8,11 @@ class CustomModalProgressHUD extends StatelessWidget {
   const CustomModalProgressHUD(
       {super.key,
       required this.child,
-      required this.inAsyncCall,
+      this.inAsyncCall,
       this.overlayColor,
       this.height = double.maxFinite});
 
-  final ValueNotifier<bool> inAsyncCall;
+  final ValueNotifier<bool>? inAsyncCall;
   final Color? overlayColor;
   final Widget child;
   final double height;
@@ -31,9 +31,9 @@ class CustomModalProgressHUD extends StatelessWidget {
 
   ValueListenableBuilder showOverlay(ThemeProvider themeProvider) {
     return ValueListenableBuilder(
-        valueListenable: inAsyncCall,
+        valueListenable: inAsyncCall ?? ValueNotifier(false),
         builder: (context, value, _) {
-          if (!inAsyncCall.value) {
+          if (!value) {
             return Consumer<CustomModalProgressHudProvider>(
                 builder: (context, provider, _) {
               if (!provider.inAsyncCall) return const SizedBox();
