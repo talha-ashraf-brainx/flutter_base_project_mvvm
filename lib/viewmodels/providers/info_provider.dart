@@ -17,7 +17,7 @@ class InfoProvider with ChangeNotifier {
 
   InfoProvider(this._countryRepo, this._localStorageManager) {
     _fetchAndSetDeviceInfo();
-    fetchCountryInfo();
+    _fetchCountryInfo();
   }
 
   void _fetchAndSetDeviceInfo() {
@@ -28,11 +28,11 @@ class InfoProvider with ChangeNotifier {
     deviceInfo = DeviceInfo(deviceName, appVersion, buildNumber, osVersion);
   }
 
-  Future<String?> fetchCountryInfo() async {
+  Future<void> _fetchCountryInfo() async {
     final dataState = await _countryRepo.getCountry();
-    if (dataState is DataFailed) return null;
+    if (dataState is DataFailed) return;
     deviceInfo?.country = dataState.data;
-    return dataState.data;
+    notifyListeners();
   }
 
   String? get skippedVersion =>

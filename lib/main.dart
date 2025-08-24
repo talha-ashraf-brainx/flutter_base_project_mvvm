@@ -9,7 +9,6 @@ import 'package:easy_localization_loader/easy_localization_loader.dart';
 import 'package:flutter_base_project_mvvm/firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
 import 'config/config.dart';
@@ -29,17 +28,17 @@ import 'views/homepage.dart';
 import 'views/search.dart';
 import 'views/settings.dart';
 import 'widgets/custom_modal_progress_hud.dart';
+import 'core/utils/helpers.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 late List<CameraDescription> cameras;
-final logger = Logger();
 
 Future<bool> _loadEnv() async {
   try {
     await dotenv.load(fileName: ".env");
     return true;
   } catch (e) {
-    debugPrint(e.toString());
+    printLog(e.toString());
     return false;
   }
 }
@@ -71,7 +70,7 @@ void main() async {
       initializeCrashlytics();
     }
   } catch (e) {
-    debugPrint('Firebase initialization failed: $e');
+    printLog('Firebase initialization failed: $e');
   }
 
   await initializeDependencies();
@@ -79,7 +78,7 @@ void main() async {
   try {
     cameras = await availableCameras();
   } catch (e) {
-    debugPrint('Camera initialization failed: $e');
+    printLog('Camera initialization failed: $e');
     cameras = [];
   }
   try {
@@ -94,7 +93,7 @@ void main() async {
         supportedLocales: LanguageConfig.locales,
         child: const MainApp()));
   } catch (e) {
-    debugPrint(e.toString());
+    printLog(e.toString());
   }
 }
 

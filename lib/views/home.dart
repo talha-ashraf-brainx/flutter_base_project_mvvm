@@ -58,14 +58,9 @@ class _HomeState extends State<Home> {
   AppBar appBar(ThemeProvider themeProvider, InfoProvider infoProvider) {
     return AppBar(
       backgroundColor: themeProvider.baseTheme.surface,
-      title: FutureBuilder(
-        future: infoProvider.fetchCountryInfo(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Text('Fetching Data...',
-                style: TextStyle(color: themeProvider.baseTheme.primaryText));
-          }
-          return Text(snapshot.data ?? 'No Data',
+      title: Consumer<InfoProvider>(
+        builder: (context, infoProvider, child) {
+          return Text(infoProvider.deviceInfo?.country ?? 'No Data',
               style: TextStyle(color: themeProvider.baseTheme.primaryText));
         },
       ),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../utils/helpers.dart';
 import '../../config/config.dart';
 import '../../widgets/popups/native_popup.dart';
 import '../constants/view_constants.dart';
@@ -68,12 +69,12 @@ class AdManager {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          debugPrint("✅ Banner Ad Loaded");
+          printLog("✅ Banner Ad Loaded");
           _retryCounts[_banner] = 0;
           bannerAdNotifier.value = ad as BannerAd;
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint("❌ Banner Ad failed: $error");
+          printLog("❌ Banner Ad failed: $error");
           ad.dispose();
           _retryLoadAd(_banner, () => _loadBannerAd(bannerAdNotifier));
         },
@@ -87,7 +88,7 @@ class AdManager {
     int delay = 2 * (1 << retryCount);
     _retryCounts[adType] = (retryCount + 1).clamp(0, 5);
 
-    debugPrint("🔄 Retrying $adType Ad in $delay seconds...");
+    printLog("🔄 Retrying $adType Ad in $delay seconds...");
 
     Future.delayed(Duration(seconds: delay), () {
       loadAd();
@@ -130,7 +131,7 @@ class AdManager {
           _retryCounts[_interstitial] = 0;
         },
         onAdFailedToLoad: (error) {
-          debugPrint("❌ Interstitial Ad failed: $error");
+          printLog("❌ Interstitial Ad failed: $error");
           _retryLoadAd(_interstitial, _loadInterstitialAd);
         },
       ),
@@ -155,7 +156,7 @@ class AdManager {
           _retryCounts[_rewarded] = 0;
         },
         onAdFailedToLoad: (error) {
-          debugPrint("❌ Rewarded Ad failed: $error");
+          printLog("❌ Rewarded Ad failed: $error");
           _retryLoadAd(_rewarded, _loadRewardedAd);
         },
       ),

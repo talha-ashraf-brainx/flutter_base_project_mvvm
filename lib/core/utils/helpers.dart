@@ -48,6 +48,10 @@ void contactUs() async {
     await launchUrl(emailLaunchUri, mode: LaunchMode.externalApplication);
   } catch (e) {
     showToast(ViewConstants.noEmailAppAvailable);
-    debugPrint('contactUs error: $e');
+    printLog('contactUs error: $e');
   }
+}
+
+void printLog(Object? message, {String prefix = Config.logPrefix}) {
+  debugPrint('$prefix ${message ?? ''}');
 }

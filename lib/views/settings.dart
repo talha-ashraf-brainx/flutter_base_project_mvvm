@@ -160,8 +160,8 @@ class _SettingsState extends State<Settings> {
       final InAppReview inAppReview = InAppReview.instance;
       inAppReview.openStoreListing(appStoreId: Config.appleId);
     } catch (e, s) {
-      debugPrint(e.toString());
-      debugPrint(s.toString());
+      printLog(e.toString());
+      printLog(s.toString());
     }
   }
 
@@ -184,7 +184,7 @@ class _SettingsState extends State<Settings> {
     try {
       await launchUrl(Uri.parse(url), mode: mode);
     } catch (e) {
-      debugPrint(e.toString());
+      printLog(e.toString());
     }
   }
 

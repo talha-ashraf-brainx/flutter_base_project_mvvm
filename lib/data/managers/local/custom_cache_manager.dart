@@ -3,171 +3,76 @@ import 'dart:convert';
 
 import 'local_storage.dart';
 
-// Custom models must have a toJson method
+/// Lightweight key-value cache persisted on top of LocalStorageManager.
+///
+/// Values are stored as strings with metadata:
+/// - savedAt: persisted timestamp (milliseconds since epoch)
+/// - ttl: optional time-to-live (milliseconds). If null, the entry does not
+///   auto-expire.
+///
+/// On read, attempts jsonDecode of the stored string; if decoding fails,
+/// returns the raw string.
 class CustomCacheManager {
   final LocalStorageManager _localStorageManager;
   CustomCacheManager(this._localStorageManager);
 
+  /// Persist [value] under [key].
+  ///
+  /// - Non-strings are jsonEncoded when possible; otherwise value.toString()
+  ///   is used.
+  /// - [ttl]: if null, the entry never auto-expires; if provided, the entry is
+  ///   considered fresh until (now - savedAt) > ttl.
   Future<void> setCache({
     required String key,
     required dynamic value,
+    Duration? ttl,
   }) async {
-    String type;
-    dynamic storeValue;
+    final String storedValue = value is String ? value : _safeJsonEncode(value);
 
-    if (value is String) {
-      type = 'String';
-      storeValue = value;
-    } else if (value is int) {
-      type = 'int';
-      storeValue = value.toString();
-    } else if (value is double) {
-      type = 'double';
-      storeValue = value.toString();
-    } else if (value is bool) {
-      type = 'bool';
-      storeValue = value.toString();
-    } else if (value is BigInt) {
-      type = 'BigInt';
-      storeValue = value.toString();
-    } else if (value is Map<String, dynamic>) {
-      type = 'Map';
-      storeValue = jsonEncode(value);
-    } else if (value is Set) {
-      if (value.isEmpty) {
-        type = 'Set:dynamic';
-        storeValue = jsonEncode([]);
-      } else {
-        final itemType = value.first.runtimeType.toString();
-        type = 'Set:$itemType';
-        storeValue = jsonEncode(value.map((e) {
-          try {
-            return e.toJson();
-          } catch (_) {
-            try {
-              return jsonDecode(jsonEncode(e));
-            } catch (_) {
-              return e.toString();
-            }
-          }
-        }).toList());
-      }
-    } else if (value is List) {
-      if (value.isEmpty) {
-        type = 'List:dynamic';
-        storeValue = jsonEncode([]);
-      } else {
-        final itemType = value.first.runtimeType.toString();
-        type = 'List:$itemType';
-        storeValue = jsonEncode(value.map((e) {
-          if (_isPrimitive(e)) {
-            return e.toString();
-          } else {
-            try {
-              return e.toJson();
-            } catch (_) {
-              try {
-                return jsonDecode(jsonEncode(e));
-              } catch (_) {
-                return e.toString();
-              }
-            }
-          }
-        }).toList());
-      }
-    } else {
-      final itemType = value.runtimeType.toString();
-      type = itemType;
-      try {
-        storeValue = jsonEncode(value.toJson());
-      } catch (e) {
-        try {
-          storeValue = jsonEncode(value);
-        } catch (_) {
-          storeValue = value.toString();
-        }
-      }
-    }
-
-    final jsonString = jsonEncode({'type': type, 'value': storeValue});
+    final jsonString = jsonEncode({
+      'value': storedValue,
+      'savedAt': DateTime.now().millisecondsSinceEpoch,
+      'ttl': ttl?.inMilliseconds,
+    });
     await _localStorageManager.setString(key: key, value: jsonString);
   }
 
-  T? getCache<T>({
+  /// Read cached value for [key].
+  ///
+  /// Freshness:
+  /// - If a ttl was stored and it has expired, returns null unless
+  ///   [allowExpired] is true.
+  /// - If ttl was null at write-time, the entry is treated as non-expiring
+  ///   (always fresh).
+  ///
+  /// Returns the parsed JSON if possible; otherwise returns the raw string.
+  dynamic getCache({
     required String key,
-    T Function(dynamic)? serialize,
+    bool allowExpired = false,
   }) {
-    String? jsonStr = _localStorageManager.getString(key: key);
-
+    final String? jsonStr = _localStorageManager.getString(key: key);
     if (jsonStr == null) return null;
 
-    final decoded = jsonDecode(jsonStr);
-    final String type = decoded['type'];
-    final dynamic value = decoded['value'];
+    final Map<String, dynamic> decoded = jsonDecode(jsonStr);
+    final int? savedAt = decoded['savedAt'];
+    final int? ttl = decoded['ttl'];
 
-    if (type == 'String') return value as T?;
-    if (type == 'int') return int.tryParse(value) as T?;
-    if (type == 'double') return double.tryParse(value) as T?;
-    if (type == 'bool') return (value.toLowerCase() == 'true') as T?;
-    if (type == 'BigInt') return BigInt.tryParse(value) as T?;
-    if (type == 'Map') return jsonDecode(value) as T;
-
-    if (type.startsWith('List:')) {
-      final itemType = type.split(':')[1];
-      final List list = jsonDecode(value);
-      if (_isPrimitiveType(itemType)) {
-        return list.map((e) => _parsePrimitive(itemType, e)).toList() as T;
-      } else {
-        return serialize?.call(list);
-      }
+    // Respect TTL when present. If ttl is null, the entry is non-expiring.
+    if (!allowExpired && savedAt != null && ttl != null) {
+      final int now = DateTime.now().millisecondsSinceEpoch;
+      if (now - savedAt > ttl) return null;
     }
 
-    if (type.startsWith('Set:')) {
-      final itemType = type.split(':')[1];
-      final List list = jsonDecode(value);
-      if (_isPrimitiveType(itemType)) {
-        return list.map((e) => _parsePrimitive(itemType, e)).toSet() as T;
-      } else {
-        final deserialized = serialize?.call(list);
-        return deserialized is Set
-            ? deserialized
-            : (deserialized as List?)?.toSet() as T?;
-      }
-    }
+    final dynamic raw = decoded['value'];
+    if (raw is! String) return raw;
 
-    return serialize?.call(jsonDecode(value));
-  }
-
-  bool _isPrimitiveType(String type) =>
-      type == 'int' ||
-      type == 'double' ||
-      type == 'bool' ||
-      type == 'String' ||
-      type == 'BigInt';
-
-  dynamic _parsePrimitive(String type, dynamic value) {
-    switch (type) {
-      case 'int':
-        return int.tryParse(value.toString());
-      case 'double':
-        return double.tryParse(value.toString());
-      case 'bool':
-        return value.toString().toLowerCase() == 'true';
-      case 'String':
-        return value.toString();
-      case 'BigInt':
-        return BigInt.tryParse(value.toString());
-      default:
-        return value;
+    try {
+      final dynamic parsed = jsonDecode(raw);
+      return parsed;
+    } catch (_) {
+      return raw;
     }
   }
-
-  bool _isPrimitive(dynamic val) =>
-      val is int ||
-      val is double ||
-      val is bool ||
-      val is String ||
-      val is BigInt;
 
   Future<void> deleteCache(String key) async {
     await _localStorageManager.delete(key: key);
@@ -175,5 +80,17 @@ class CustomCacheManager {
 
   Future<void> deleteAll() async {
     await _localStorageManager.deleteAll();
+  }
+
+  String _safeJsonEncode(dynamic value) {
+    try {
+      return jsonEncode(value);
+    } catch (_) {
+      try {
+        return jsonEncode(value.toString());
+      } catch (_) {
+        return value.toString();
+      }
+    }
   }
 }

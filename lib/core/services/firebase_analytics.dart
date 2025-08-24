@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/material.dart';
+import '../utils/helpers.dart';
 import 'package:flutter_base_project_mvvm/core/extensions/string.dart';
 
 enum AnalyticsTaskType { screenView, event, userProperty }
@@ -94,7 +94,7 @@ class AppAnalytics {
             break;
         }
       } catch (e) {
-        debugPrint('Analytics error: $e');
+        printLog('Analytics error: $e');
       }
     }
     _isProcessing = false;

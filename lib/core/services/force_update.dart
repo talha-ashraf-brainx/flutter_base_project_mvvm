@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/helpers.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
@@ -45,7 +46,7 @@ void checkForcedUpdates() {
   final recommendedVersion =
       firebaseRemoteConfigService.getRecommendedMinimumVersion();
 
-  debugPrint(
+  printLog(
       'requiredVersion: $requiredVersion, recommendedVersion: $recommendedVersion, currentVersion: ${packageInfo.version}');
 
   final previousSkippedRecommendedVersion =

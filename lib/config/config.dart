@@ -35,4 +35,5 @@ class Config {
   // TODO: Update this flag after firebase setup
   // TODO: Use flutterfire cli for firebase setup and override current implementations
   static const bool firebaseEnabled = false;
+  static const String logPrefix = '[DEV LOG]';
 }

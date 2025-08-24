@@ -5,40 +5,31 @@ import '../../config/config.dart';
 import '../../main.dart';
 
 class Responsive {
-  static double w(double designWidthUnit) => _scaleWidth(designWidthUnit);
-  static double h(double designHeightUnit) => _scaleHeight(designHeightUnit);
-  static double d(double designUnit) =>
-      min(_scaleWidth(designUnit), _scaleHeight(designUnit));
-  static double r(double designUnit) => d(designUnit) / 2;
+  static double w(double pixels) => _scaleWidth(pixels);
+  static double h(double pixels) => _scaleHeight(pixels);
+  static double d(double pixels) =>
+      min(_scaleWidth(pixels), _scaleHeight(pixels));
+  static double r(double pixels) => d(pixels) / 2;
 
-  static double f(
-    double designFontSize, {
-    double widthBreakpoint = 600.0,
-    double heightBreakpoint = 900.0,
-  }) {
+  static double f(double pixels) {
     final (double w, double h) = _size();
-    final cappedWidth = w > widthBreakpoint ? widthBreakpoint : w;
-    final cappedHeight = h > heightBreakpoint ? heightBreakpoint : h;
+    final (double dw, double dh) =
+        (Config.designScreenWidth, Config.designScreenHeight);
 
-    const designWidth = Config.designScreenWidth;
-    const designHeight = Config.designScreenHeight;
+    final deviceDiagonal = sqrt(w * w + h * h);
+    final designDiagonal = sqrt(dw * dw + dh * dh);
 
-    final designDiagonal =
-        sqrt(designWidth * designWidth + designHeight * designHeight);
-    final deviceDiagonal =
-        sqrt(cappedWidth * cappedWidth + cappedHeight * cappedHeight);
-
-    return (designFontSize / designDiagonal) * deviceDiagonal;
+    return (pixels / designDiagonal) * deviceDiagonal;
   }
 
-  static double _scaleWidth(double designWidthUnit) {
+  static double _scaleWidth(double pixels) {
     final (double w, _) = _size();
-    return designWidthUnit * w / Config.designScreenWidth;
+    return pixels * w / Config.designScreenWidth;
   }
 
-  static double _scaleHeight(double designHeightUnit) {
+  static double _scaleHeight(double pixels) {
     final (_, double h) = _size();
-    return designHeightUnit * h / Config.designScreenHeight;
+    return pixels * h / Config.designScreenHeight;
   }
 
   static (double w, double h) _size() {

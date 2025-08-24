@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:flutter/material.dart';
+import '../utils/helpers.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../config/config.dart';
@@ -49,7 +49,7 @@ class FirebaseRemoteConfigService {
         await _remoteConfig.activate();
       });
     } catch (e) {
-      debugPrint("Error in FirebaseRemoteConfigService: $e");
+      printLog("Error in FirebaseRemoteConfigService: $e");
     }
 
     return this;

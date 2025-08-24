@@ -43,6 +43,11 @@ A robust Flutter foundation with comprehensive features for modern mobile app de
 - **Progress-based Uploads** for files
 - **Enhanced Error Handling**
 
+### ✅ **Offline Caching with TTL**
+- **Cache Policies**: `cacheOnly`, `networkOnly`, `cacheFirst`, `networkFirst`, `cacheThenNetwork`
+- **TTL Support**: Per-request `ttl` to auto-expire cached entries
+- **Offline Fallback**: Falls back to cached data when network fails (depending on policy)
+
 ### ✅ **Firebase Integration**
 - **Remote Config** with forced update popup
 - **Analytics & Crashlytics** for monitoring
@@ -134,3 +139,87 @@ lib/
 ---
 
 **Note**: This project is optimized for mobile development (iOS/Android) with all desktop and web platforms removed for cleaner maintenance.
+
+---
+
+## ⏱️ TTL-based caching and offline support
+
+The networking layer supports optional local caching with per-request TTL (time-to-live) and multiple cache policies to enable responsive UX and offline support.
+
+### Cache policies
+- `cacheOnly`: Return fresh cache only. Do not hit the network. Throws if missing.
+- `networkOnly`: Hit the network only. Ignore cache.
+- `cacheFirst`: If fresh cache exists (not expired), return it; otherwise fetch and cache.
+- `networkFirst`: Try network; if it fails, return cache (fresh or stale) if available.
+- `cacheThenNetwork`: Immediately provide cached data via `onCached`, then fetch network and update cache.
+
+Defaults:
+- `GET`: `cacheThenNetwork`
+- `POST`/`PUT`/`DELETE`/uploads: `networkOnly`
+
+### TTL behavior
+- Each cached entry stores `savedAt` and optional `ttl` (in milliseconds).
+- A cached value is considered fresh if `now - savedAt <= ttl`.
+- Expired entries are not returned by default. You can opt-in to read expired entries for manual fallbacks.
+
+### Usage examples
+
+Return cached data instantly, refresh from API, and keep cache for 10 minutes:
+
+```dart
+final response = await _apiManager.get(
+  '/json',
+  headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+  cachePolicy: CachePolicy.cacheThenNetwork,
+  ttl: const Duration(minutes: 10),
+  onCached: (data) {
+    // Use cached data immediately
+  },
+);
+```
+
+Network-first with offline fallback to cache:
+
+```dart
+final response = await _apiManager.get(
+  '/resource',
+  cachePolicy: CachePolicy.networkFirst,
+  ttl: const Duration(minutes: 5),
+);
+```
+
+Ignore caching for a specific request:
+
+```dart
+await _apiManager.get('/fresh', cachePolicy: CachePolicy.networkOnly);
+```
+
+### Manual cache access and invalidation
+
+- Cache keys use the full URL: `'$baseUrl$endpoint'`.
+- Read cache directly (optionally allow expired for manual fallbacks):
+
+```dart
+final cacheManager = sl<CustomCacheManager>();
+final data = cacheManager.getCache(
+  key: 'https://example.com/json',
+  allowExpired: true,
+);
+```
+
+- Remove a single key:
+
+```dart
+await cacheManager.deleteCache('https://example.com/json');
+```
+
+- Clear all cached entries:
+
+```dart
+await cacheManager.deleteAll();
+```
+
+### Notes
+- TTL is optional; if omitted, entries do not expire automatically.
+- `onCached` is called only when a cached entry exists for the request.
+- For write operations (POST/PUT/DELETE), default policy is `networkOnly`. Override deliberately if your use case warrants caching.

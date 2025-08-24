@@ -1,49 +1,30 @@
+import 'dart:async';
+
+import 'package:api_repo/data/managers/cache_policy.dart';
+import 'package:api_repo/data/repos/api_repo.dart';
+
 import '../../../../core/resources/data_state.dart';
-import '../../../../core/resources/error_handler.dart';
 import '../../../managers/remote/api_manager.dart';
 
-import 'package:flutter/foundation.dart';
-
-class CountryRepo {
+class CountryRepo with ApiRepo {
   final ApiManager _apiManager;
   CountryRepo(this._apiManager);
 
-  Future<DataState<String>> getCountry({Function(dynamic)? onCached}) async {
-    final DateTime apiStartTime = DateTime.now();
-    int? cacheDuration;
+  Future<DataState<String>> getCountry() async {
+    final completer = Completer<DataState<String>>();
 
-    final dataState = await ErrorHandler.onNetworkRequest<String>(
-      fetch: () async {
-        final DateTime cacheStartTime = DateTime.now();
-
-        final response = await _apiManager.get(
-          '/json',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          onCached: (data) {
-            final DateTime cacheEndTime = DateTime.now();
-            cacheDuration =
-                cacheEndTime.difference(cacheStartTime).inMilliseconds;
-            debugPrint('🗃️ Cached data received in $cacheDuration ms');
-
-            onCached?.call(data['country']);
-          },
-        );
-
-        final DateTime apiEndTime = DateTime.now();
-        final apiDuration = apiEndTime.difference(apiStartTime).inMilliseconds;
-        debugPrint('🌐 API data received in $apiDuration ms');
-
-        if (cacheDuration != null && cacheDuration! > 0) {
-          final speedFactor = (apiDuration / cacheDuration!).toStringAsFixed(2);
-          debugPrint(
-              '⚡ Cached data was ~${speedFactor}x faster than API response');
+    onRequest<String>(
+      cachePolicy: CachePolicy.cacheThenNetwork,
+      showLogs: true,
+      request: () async =>
+          (await _apiManager.get('/json'))['country'] as String,
+      onData: (String data, ResponseOrigin source) {
+        if (!completer.isCompleted) {
+          completer.complete(DataSuccess<String>(data));
         }
-
-        final country = response['country'];
-        return country;
       },
     );
 
-    return dataState;
+    return completer.future;
   }
 }

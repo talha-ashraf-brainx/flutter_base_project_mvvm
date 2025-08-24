@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/utils/helpers.dart';
 
 import '../../config/config.dart';
 import '../../core/constants/app_constants.dart';
@@ -134,7 +135,7 @@ class _ForcedUpdateState extends State<ForcedUpdate> {
     try {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     } catch (e) {
-      debugPrint(e.toString());
+      printLog(e.toString());
     }
   }
 }

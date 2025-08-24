@@ -32,7 +32,6 @@ class DioApiManager extends ApiManager {
       endpoint,
       fetch: (url) async => await _dio.get(url,
           options: Options(headers: _mergeHeaders(headers))),
-      onCached: onCached,
     );
     return response;
   }
@@ -51,7 +50,6 @@ class DioApiManager extends ApiManager {
         data: jsonEncode(body),
         options: Options(headers: _mergeHeaders(headers)),
       ),
-      onCached: onCached,
     );
     return response;
   }
@@ -70,7 +68,6 @@ class DioApiManager extends ApiManager {
         data: jsonEncode(body),
         options: Options(headers: _mergeHeaders(headers)),
       ),
-      onCached: onCached,
     );
     return response;
   }
@@ -84,7 +81,6 @@ class DioApiManager extends ApiManager {
         url,
         options: Options(headers: _mergeHeaders(headers)),
       ),
-      onCached: onCached,
     );
     return response;
   }
@@ -112,7 +108,6 @@ class DioApiManager extends ApiManager {
               onProgress?.call(sent, total),
         );
       },
-      onCached: onCached,
     );
     return response;
   }
@@ -166,12 +161,9 @@ class DioApiManager extends ApiManager {
   }
 
   Future<dynamic> _onRequest(String endpoint,
-      {required Future<Response> Function(String url) fetch,
-      required Function(dynamic)? onCached}) async {
+      {required Future<Response> Function(String url) fetch}) async {
     try {
       final url = '$baseUrl$endpoint';
-      final cachedData = cacheManager.getCache<dynamic>(key: url);
-      if (cachedData != null) onCached?.call(cachedData);
       final response = await fetch(url);
       final data = _handleResponse(response);
       cacheManager.setCache(key: url, value: data);
