@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_base_project_mvvm/core/utils/helpers.dart';
 
+import '../constants/view_constants.dart';
 import 'custom_exceptions.dart';
 import 'data_state.dart';
 
@@ -49,12 +50,25 @@ class ErrorHandler {
   /// Returns:
   /// - A [DataSuccess<T>] containing the parsed result on success.
   /// - A [DataFailed] with an error message on failure.
+  ///
+  /// [timeout]
+  /// - *(Optional)* The maximum duration to wait for the request to complete.
+  /// - Defaults to 30 seconds.
+  /// - If the request exceeds this duration, a timeout error will be returned.
   static Future<DataState<T>> onNetworkRequest<T>({
     required Future<dynamic> Function() fetch,
+    Duration timeout = const Duration(seconds: 30),
   }) async {
     try {
-      final response = await fetch() as T;
+      final response = await fetch().timeout(
+        timeout,
+        onTimeout: () => throw TimeoutException(ViewConstants.requestTimeout),
+      ) as T;
       return DataSuccess<T>(response);
+    } on TimeoutException catch (e, s) {
+      final errorMessage = e.message!;
+      _showErrorInConsole(error: errorMessage, stackTrace: s);
+      return DataFailed(errorMessage);
     } on RestfulRequestException catch (e, s) {
       final errorMessage = e.message;
       _showErrorInConsole(error: e.error, stackTrace: s);

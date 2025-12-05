@@ -30,4 +30,5 @@ class ViewConstants {
   static const String search = "search";
   static const String more = "more";
   static const String cropImage = "cropImage";
+  static const String requestTimeout = "requestTimeout";
 }

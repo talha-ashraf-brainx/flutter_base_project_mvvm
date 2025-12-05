@@ -25,3 +25,4 @@ noEmailAppAvailable,No email app available
 cropImage,Crop Image
 errorOpeningCamera,Error opening camera
 cameraAccessDenied,Camera access denied
+requestTimeout,Request timeout

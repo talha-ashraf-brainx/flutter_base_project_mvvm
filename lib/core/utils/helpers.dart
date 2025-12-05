@@ -55,3 +55,10 @@ void contactUs() async {
 void printLog(Object? message, {String prefix = Config.logPrefix}) {
   debugPrint('$prefix ${message ?? ''}');
 }
+
+String getCallerFunctionName() {
+  final traceLines = StackTrace.current.toString().split('\n');
+  final callerLine = traceLines.length > 2 ? traceLines[2] : '';
+  final match = RegExp(r'#\d+\s+([^\s]+)').firstMatch(callerLine);
+  return match?.group(1) ?? 'unknown_function';
+}
