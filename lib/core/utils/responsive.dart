@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-import '../../config/config.dart';
 import '../../main.dart';
 
 class Responsive {
+  static const double _designScreenHeight = 812.0;
+  static const double _designScreenWidth = 375.0;
+
   static double w(double pixels) => _scaleWidth(pixels);
   static double h(double pixels) => _scaleHeight(pixels);
   static double d(double pixels) =>
@@ -13,8 +15,7 @@ class Responsive {
 
   static double f(double pixels) {
     final (double w, double h) = _size();
-    final (double dw, double dh) =
-        (Config.designScreenWidth, Config.designScreenHeight);
+    final (double dw, double dh) = (_designScreenWidth, _designScreenHeight);
 
     final deviceDiagonal = sqrt(w * w + h * h);
     final designDiagonal = sqrt(dw * dw + dh * dh);
@@ -24,12 +25,12 @@ class Responsive {
 
   static double _scaleWidth(double pixels) {
     final (double w, _) = _size();
-    return pixels * w / Config.designScreenWidth;
+    return pixels * w / _designScreenWidth;
   }
 
   static double _scaleHeight(double pixels) {
     final (_, double h) = _size();
-    return pixels * h / Config.designScreenHeight;
+    return pixels * h / _designScreenHeight;
   }
 
   static (double w, double h) _size() {

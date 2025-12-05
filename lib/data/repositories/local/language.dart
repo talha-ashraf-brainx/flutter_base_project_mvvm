@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import '../../../config/config.dart';
 import '../../../config/languages/language.dart';
+import '../../../config/languages/language_config.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../managers/local/local_storage.dart';
 
@@ -13,7 +13,7 @@ class LanguageRepo {
     final String? storedLanguage =
         _manager.getString(key: AppConstants.language);
     if (storedLanguage == null) {
-      return Config.defaultLanguage;
+      return LanguageConfig.defaultLanguage;
     }
     return Language.fromJson(jsonDecode(storedLanguage));
   }

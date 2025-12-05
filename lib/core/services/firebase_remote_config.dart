@@ -18,10 +18,8 @@ class FirebaseRemoteConfigService {
     try {
       await _remoteConfig.setConfigSettings(
         RemoteConfigSettings(
-          fetchTimeout: const Duration(minutes: 1),
-          minimumFetchInterval: Config.debug
-              ? const Duration(seconds: 1)
-              : const Duration(hours: 1),
+          fetchTimeout: const Duration(seconds: 30),
+          minimumFetchInterval: const Duration(seconds: 1),
         ),
       );
 
@@ -44,10 +42,6 @@ class FirebaseRemoteConfigService {
                 });
 
       await _remoteConfig.fetchAndActivate();
-
-      _remoteConfig.onConfigUpdated.listen((event) async {
-        await _remoteConfig.activate();
-      });
     } catch (e) {
       printLog("Error in FirebaseRemoteConfigService: $e");
     }

@@ -75,6 +75,7 @@ void main() async {
 
   await initializeDependencies();
   await switchToPortraitMode();
+  await Future.delayed(const Duration(milliseconds: 150));
   try {
     cameras = await availableCameras();
   } catch (e) {
@@ -89,7 +90,7 @@ void main() async {
     runApp(EasyLocalization(
         assetLoader: CsvAssetLoader(),
         path: AppAssets.translations,
-        fallbackLocale: Config.defaultLanguage.locale,
+        fallbackLocale: LanguageConfig.defaultLanguage.locale,
         supportedLocales: LanguageConfig.locales,
         child: const MainApp()));
   } catch (e) {
