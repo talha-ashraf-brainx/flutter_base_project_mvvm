@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../viewmodels/theme_provider.dart';
+import '../viewmodels/providers/theme_provider.dart';
 
 class Search extends StatefulWidget {
   const Search({super.key});

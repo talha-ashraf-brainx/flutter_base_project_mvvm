@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../viewmodels/providers/custom_modal_progress_hud.dart';
-import '../viewmodels/theme_provider.dart';
+import '../viewmodels/providers/theme_provider.dart';
 
 class CustomModalProgressHUD extends StatelessWidget {
   const CustomModalProgressHUD(
@@ -24,24 +23,9 @@ class CustomModalProgressHUD extends StatelessWidget {
     return Stack(
       children: [
         child,
-        showOverlay(themeProvider),
+        overlay(themeProvider),
       ],
     );
-  }
-
-  ValueListenableBuilder showOverlay(ThemeProvider themeProvider) {
-    return ValueListenableBuilder(
-        valueListenable: inAsyncCall ?? ValueNotifier(false),
-        builder: (context, value, _) {
-          if (!value) {
-            return Consumer<CustomModalProgressHudProvider>(
-                builder: (context, provider, _) {
-              if (!provider.inAsyncCall) return const SizedBox();
-              return overlay(themeProvider);
-            });
-          }
-          return overlay(themeProvider);
-        });
   }
 
   Container overlay(ThemeProvider themeProvider) {

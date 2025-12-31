@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../config/config.dart';
-import '../config/theme/base.dart';
-import '../config/theme/dark.dart';
-import '../config/theme/light.dart';
-import '../data/repositories/local/theme.dart';
+import '../../config/config.dart';
+import '../../config/theme/base.dart';
+import '../../config/theme/dark.dart';
+import '../../config/theme/light.dart';
+import '../../data/repositories/local/theme.dart';
 
 class ThemeProvider with ChangeNotifier {
   late BaseTheme baseTheme;

@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization_loader/easy_localization_loader.dart';
 import 'package:flutter_base_project_mvvm/firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:provider/provider.dart';
 
 import 'config/config.dart';
@@ -18,16 +17,14 @@ import 'config/languages/language_config.dart';
 import 'core/constants/app_assets.dart';
 import 'core/utils/device_orientation.dart';
 import 'injection_container.dart';
-import 'viewmodels/language_provider.dart';
-import 'viewmodels/providers/custom_modal_progress_hud.dart';
+import 'viewmodels/providers/language_provider.dart';
 import 'viewmodels/providers/info_provider.dart';
-import 'viewmodels/theme_provider.dart';
+import 'viewmodels/providers/theme_provider.dart';
 import 'views/splash.dart';
 import 'views/home.dart';
 import 'views/homepage.dart';
 import 'views/search.dart';
 import 'views/settings.dart';
-import 'widgets/custom_modal_progress_hud.dart';
 import 'core/utils/helpers.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -43,16 +40,28 @@ Future<bool> _loadEnv() async {
   }
 }
 
-void initializeCrashlytics() {
-  if (!Config.debug) {
-    FlutterError.onError = (errorDetails) {
-      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-    };
-    PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
+Future<void> initializeFirebase() async {
+  try {
+    if (Config.firebaseEnabled) {
+      await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform);
+      initializeCrashlytics();
+    }
+  } catch (e) {
+    printLog('Firebase initialization failed: $e');
   }
+}
+
+void initializeCrashlytics() {
+  if (!Config.debug) return;
+
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
 }
 
 void main() async {
@@ -63,19 +72,12 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    if (Config.firebaseEnabled) {
-      await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform);
-      initializeCrashlytics();
-    }
-  } catch (e) {
-    printLog('Firebase initialization failed: $e');
-  }
+  await initializeFirebase();
+  initializeCrashlytics();
 
   await initializeDependencies();
   await switchToPortraitMode();
-  await Future.delayed(const Duration(milliseconds: 150));
+  await Future.delayed(const Duration(milliseconds: 200));
   try {
     cameras = await availableCameras();
   } catch (e) {
@@ -83,9 +85,6 @@ void main() async {
     cameras = [];
   }
   try {
-    if (Config.debug) {
-      FlavorConfig(name: "DEBUG", location: BannerLocation.topEnd);
-    }
     await EasyLocalization.ensureInitialized();
     runApp(EasyLocalization(
         assetLoader: CsvAssetLoader(),
@@ -106,8 +105,6 @@ class MainApp extends StatelessWidget {
     return MultiProvider(providers: [
       ChangeNotifierProvider<ThemeProvider>(create: (_) => sl()),
       ChangeNotifierProvider<LanguageProvider>(create: (_) => sl()),
-      ChangeNotifierProvider<CustomModalProgressHudProvider>(
-          create: (_) => sl()),
       ChangeNotifierProvider<InfoProvider>(create: (_) => sl(), lazy: false),
     ], child: const BaseApp());
   }
@@ -126,27 +123,23 @@ class _BaseAppState extends State<BaseApp> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
-    return FlavorBanner(
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: context.localizationDelegates,
-        supportedLocales: context.supportedLocales,
-        locale: context.locale,
-        color: themeProvider.baseTheme.primary,
-        theme: themeProvider.baseTheme.themeData,
-        initialRoute: AppRoutes.splash.path,
-        onGenerateRoute: AppRouter.generateRoute,
-        routes: {
-          AppRoutes.splash.path: (context) => const Splash(),
-          AppRoutes.home.path: (context) => const Home(),
-          AppRoutes.homepage.path: (context) => const Homepage(),
-          AppRoutes.search.path: (context) => const Search(),
-          AppRoutes.settings.path: (context) => const Settings(),
-        },
-        builder: (context, child) =>
-            CustomModalProgressHUD(child: child ?? const SizedBox.shrink()),
-      ),
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: Config.debug,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      color: themeProvider.baseTheme.primary,
+      theme: themeProvider.baseTheme.themeData,
+      initialRoute: AppRoutes.splash.path,
+      onGenerateRoute: AppRouter.generateRoute,
+      routes: {
+        AppRoutes.splash.path: (context) => const Splash(),
+        AppRoutes.home.path: (context) => const Home(),
+        AppRoutes.homepage.path: (context) => const Homepage(),
+        AppRoutes.search.path: (context) => const Search(),
+        AppRoutes.settings.path: (context) => const Settings(),
+      },
     );
   }
 }

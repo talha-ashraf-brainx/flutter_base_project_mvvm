@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../config/config.dart';
 import '../core/services/force_update.dart';
 import '../viewmodels/providers/info_provider.dart';
-import '../viewmodels/theme_provider.dart';
+import '../viewmodels/providers/theme_provider.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 import 'homepage.dart';
 import 'search.dart';

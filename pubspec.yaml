@@ -19,7 +19,6 @@ dependencies:
   fluttertoast: ^8.2.8
   equatable: ^2.0.5
   provider: ^6.1.2
-  flutter_flavor: ^3.1.4
   flutter_dotenv: ^5.1.0
   keyboard_actions: ^4.2.0
   in_app_review: ^2.0.10

@@ -14,7 +14,7 @@ import '../../core/services/firebase_remote_config.dart';
 import '../../core/services/force_update.dart';
 import '../../injection_container.dart';
 import '../../viewmodels/providers/info_provider.dart';
-import '../../viewmodels/theme_provider.dart';
+import '../../viewmodels/providers/theme_provider.dart';
 import '../translated_text.dart';
 
 class ForcedUpdate extends StatefulWidget {

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_base_project_mvvm/viewmodels/theme_provider.dart';
+import 'package:flutter_base_project_mvvm/viewmodels/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';

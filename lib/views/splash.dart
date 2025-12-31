@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../config/router/app_router.dart';
 import '../config/router/app_routes.dart';
-import '../viewmodels/theme_provider.dart';
+import '../viewmodels/providers/theme_provider.dart';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});

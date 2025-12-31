@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_base_project_mvvm/core/extensions/double.dart';
 import 'package:flutter_base_project_mvvm/core/extensions/int.dart';
@@ -16,8 +17,7 @@ import '../core/constants/app_constants.dart';
 import '../core/constants/view_constants.dart';
 import '../core/utils/helpers.dart';
 import '../main.dart';
-import '../viewmodels/theme_provider.dart';
-import '../widgets/custom_cupertino_switch.dart';
+import '../viewmodels/providers/theme_provider.dart';
 import '../widgets/custom_modal_progress_hud.dart';
 import '../widgets/translated_text.dart';
 
@@ -137,11 +137,9 @@ class _SettingsState extends State<Settings> {
               fontSize: AppConstants.font20Px,
               fontWeight: FontWeight.w600),
         ),
-        CustomCupertinoSwitch(
+        CupertinoSwitch(
           value: themeProvider.themeType == Config.dark,
           onChanged: (val) => onThemeChange(val, themeProvider),
-          activeIcon: Center(child: SvgPicture.asset(AppAssets.moon)),
-          inactiveIcon: Center(child: SvgPicture.asset(AppAssets.sun)),
         ),
       ],
     );

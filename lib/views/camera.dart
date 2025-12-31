@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../core/constants/app_assets.dart';
 import '../core/constants/app_constants.dart';
-import '../viewmodels/theme_provider.dart';
+import '../viewmodels/providers/theme_provider.dart';
 import 'mixins/image_picker.dart';
 
 class CameraView extends StatefulWidget {

@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import '../core/constants/app_assets.dart';
 import '../core/constants/app_constants.dart';
 import '../core/constants/view_constants.dart';
-import '../viewmodels/theme_provider.dart';
+import '../viewmodels/providers/theme_provider.dart';
 import 'translated_text.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
