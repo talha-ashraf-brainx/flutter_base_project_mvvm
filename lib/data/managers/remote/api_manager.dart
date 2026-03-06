@@ -1,10 +1,7 @@
 import 'dart:io';
 
-import '../local/custom_cache_manager.dart';
-
 abstract class ApiManager {
   String get baseUrl;
-  CustomCacheManager get cacheManager;
 
   Map<String, String> get defaultHeaders => {
         'Content-Type': 'application/json',

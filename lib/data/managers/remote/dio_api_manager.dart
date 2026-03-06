@@ -8,19 +8,15 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/constants/view_constants.dart';
 import '../../../core/resources/custom_exceptions.dart';
 import '../../../core/resources/interceptors/retry_on_disconnect.dart';
-import '../local/custom_cache_manager.dart';
 import 'api_manager.dart';
 
 class DioApiManager extends ApiManager {
   @override
   final String baseUrl;
 
-  @override
-  final CustomCacheManager cacheManager;
-
   final Dio _dio = Dio();
 
-  DioApiManager(this.baseUrl, this.cacheManager) {
+  DioApiManager(this.baseUrl) {
     _dio.interceptors.add(
         RetryOnDisconnectInterceptor(dio: _dio, connectivity: Connectivity()));
   }
@@ -140,24 +136,32 @@ class DioApiManager extends ApiManager {
   }
 
   void _handleRestfulRequestException(Object error, StackTrace stackTrace) {
-    throw RestfulRequestException(
-        message: ViewConstants.serverError.tr(),
-        error: error,
-        stackTrace: stackTrace);
+    throw CustomException(
+      type: CustomExceptionType.restfulRequest,
+      message: ViewConstants.serverError.tr(),
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   void _handleInvalidResponseException(
       int statusCode, Object error, StackTrace stackTrace, dynamic response) {
-    throw InvalidServerResponseException(
-        statusCode: statusCode,
-        message: ViewConstants.invalidResponse.tr(),
-        error: error,
-        stackTrace: stackTrace,
-        response: response);
+    throw CustomException(
+      type: CustomExceptionType.invalidServerResponse,
+      message: ViewConstants.invalidResponse.tr(),
+      statusCode: statusCode,
+      error: error,
+      stackTrace: stackTrace,
+      response: response,
+    );
   }
 
   void _handleErrorMessageFromServer(int statusCode, String message) {
-    throw ErrorMessageFromServer(statusCode: statusCode, message: message);
+    throw CustomException(
+      type: CustomExceptionType.errorMessageFromServer,
+      message: message,
+      statusCode: statusCode,
+    );
   }
 
   Future<dynamic> _onRequest(String endpoint,
@@ -166,11 +170,8 @@ class DioApiManager extends ApiManager {
       final url = '$baseUrl$endpoint';
       final response = await fetch(url);
       final data = _handleResponse(response);
-      cacheManager.setCache(key: url, value: data);
       return data;
-    } on InvalidServerResponseException {
-      rethrow;
-    } on ErrorMessageFromServer {
+    } on CustomException {
       rethrow;
     } catch (e, s) {
       _handleRestfulRequestException(e, s);

@@ -11,8 +11,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 import 'config/config.dart';
-import 'config/router/app_router.dart';
-import 'config/router/app_routes.dart';
 import 'config/languages/language_config.dart';
 import 'core/constants/app_assets.dart';
 import 'core/utils/device_orientation.dart';
@@ -21,10 +19,6 @@ import 'viewmodels/providers/language_provider.dart';
 import 'viewmodels/providers/info_provider.dart';
 import 'viewmodels/providers/theme_provider.dart';
 import 'views/splash.dart';
-import 'views/home.dart';
-import 'views/homepage.dart';
-import 'views/search.dart';
-import 'views/settings.dart';
 import 'core/utils/helpers.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -42,26 +36,30 @@ Future<bool> _loadEnv() async {
 
 Future<void> initializeFirebase() async {
   try {
-    if (Config.firebaseEnabled) {
-      await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform);
-      initializeCrashlytics();
-    }
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+
+    if (Config.debug) return;
+
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
   } catch (e) {
     printLog('Firebase initialization failed: $e');
   }
 }
 
-void initializeCrashlytics() {
-  if (!Config.debug) return;
-
-  FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  };
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+void _loadCameras() async {
+  try {
+    cameras = await availableCameras();
+  } catch (e) {
+    printLog('Camera initialization failed: $e');
+    cameras = [];
+  }
 }
 
 void main() async {
@@ -73,17 +71,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initializeFirebase();
-  initializeCrashlytics();
-
   await initializeDependencies();
   await switchToPortraitMode();
-  await Future.delayed(const Duration(milliseconds: 200));
-  try {
-    cameras = await availableCameras();
-  } catch (e) {
-    printLog('Camera initialization failed: $e');
-    cameras = [];
-  }
+
+  _loadCameras();
+
   try {
     await EasyLocalization.ensureInitialized();
     runApp(EasyLocalization(
@@ -131,15 +123,7 @@ class _BaseAppState extends State<BaseApp> {
       locale: context.locale,
       color: themeProvider.baseTheme.primary,
       theme: themeProvider.baseTheme.themeData,
-      initialRoute: AppRoutes.splash.path,
-      onGenerateRoute: AppRouter.generateRoute,
-      routes: {
-        AppRoutes.splash.path: (context) => const Splash(),
-        AppRoutes.home.path: (context) => const Home(),
-        AppRoutes.homepage.path: (context) => const Homepage(),
-        AppRoutes.search.path: (context) => const Search(),
-        AppRoutes.settings.path: (context) => const Settings(),
-      },
+      home: const Splash(),
     );
   }
 }

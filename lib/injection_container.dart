@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/services/firebase_remote_config.dart';
-import 'data/managers/local/custom_cache_manager.dart';
 import 'data/managers/local/local_storage.dart';
 import 'data/managers/local/shared_preference.dart';
 import 'data/managers/remote/api_manager.dart';
@@ -50,10 +49,8 @@ Future<void> initializeDependencies() async {
   // Managers
   sl.registerSingleton<LocalStorageManager>(
       SharedPreferenceManager(sl<SharedPreferences>()));
-  sl.registerSingleton<CustomCacheManager>(
-      CustomCacheManager(sl<LocalStorageManager>()));
-  sl.registerSingleton<ApiManager>(
-      DioApiManager(AppConstants.countryUrl, sl<CustomCacheManager>()),
+
+  sl.registerSingleton<ApiManager>(DioApiManager(AppConstants.countryUrl),
       instanceName: AppConstants.countryUrl);
 
   // Repositories

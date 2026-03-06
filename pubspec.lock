@@ -17,14 +17,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
-  api_repo:
-    dependency: "direct main"
-    description:
-      name: api_repo
-      sha256: "2092fd7fb2151f14881ce64faf20e5a6237adc2bc01b7193451fa79dda9dfe38"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.4"
   archive:
     dependency: transitive
     description:
