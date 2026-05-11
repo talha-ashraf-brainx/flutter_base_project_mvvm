@@ -115,66 +115,108 @@ class DioApiManager extends ApiManager {
     };
   }
 
+  Future<dynamic> _onRequest(String endpoint,
+      {required Future<Response> Function(String url) fetch}) async {
+    try {
+      final url = '$baseUrl$endpoint';
+      final response = await fetch(url);
+      return _handleResponse(response);
+    } on CustomException {
+      rethrow;
+    } on DioException catch (e) {
+      _handleError(e.response);
+    } catch (e, s) {
+      _handleRestfulRequestException(e, s);
+    }
+  }
+
   dynamic _handleResponse(Response response) {
     if (response.statusCode != null &&
         response.statusCode! >= 200 &&
         response.statusCode! < 300) {
       return response.data;
     } else {
-      dynamic errorMessage;
-      try {
-        final decoded = response.data;
-        // TODO: Add error message key from server here
-        errorMessage = decoded['msg'] ?? decoded['error'];
-      } catch (e, s) {
+      if (response.data is! Map) {
         _handleInvalidResponseException(
-            response.statusCode ?? 0, e, s, response.data);
+          response.statusCode,
+          response.data,
+          StackTrace.current,
+          response.data,
+          message: ViewConstants.issuePleaseTryAgain.tr(),
+        );
       }
-
-      _handleErrorMessageFromServer(response.statusCode ?? 0, errorMessage);
+      _handleInvalidResponseException(
+        response.statusCode,
+        response.data['error'],
+        StackTrace.current,
+        response.data,
+        message: response.data['message'],
+      );
     }
   }
 
-  void _handleRestfulRequestException(Object error, StackTrace stackTrace) {
+  void _handleError(
+    Response? response, {
+    List<String> messageKeys = const ['message', 'error'],
+  }) {
+    dynamic errorMessage;
+
+    try {
+      final data = response?.data;
+
+      if (data is Map) {
+        for (final key in messageKeys) {
+          final value = data[key];
+
+          if (value != null && value.toString().trim().isNotEmpty) {
+            errorMessage = value;
+            break;
+          }
+        }
+      }
+    } catch (e, s) {
+      _handleInvalidResponseException(
+        response?.statusCode,
+        e,
+        s,
+        response?.data,
+        message: ViewConstants.issuePleaseTryAgain.tr(),
+      );
+    }
+
+    _handleErrorMessageFromServer(
+      response?.statusCode,
+      errorMessage,
+    );
+  }
+
+  void _handleRestfulRequestException(Object? e, StackTrace? s) {
     throw CustomException(
       type: CustomExceptionType.restfulRequest,
       message: ViewConstants.serverError.tr(),
-      error: error,
-      stackTrace: stackTrace,
+      error: e,
+      stackTrace: s,
     );
   }
 
   void _handleInvalidResponseException(
-      int statusCode, Object error, StackTrace stackTrace, dynamic response) {
+      int? statusCode, Object? e, StackTrace? s, dynamic response,
+      {required String message}) {
     throw CustomException(
       type: CustomExceptionType.invalidServerResponse,
-      message: ViewConstants.invalidResponse.tr(),
+      message: message,
       statusCode: statusCode,
-      error: error,
-      stackTrace: stackTrace,
+      error: e,
+      stackTrace: s,
       response: response,
     );
   }
 
-  void _handleErrorMessageFromServer(int statusCode, String message) {
+  void _handleErrorMessageFromServer(int? statusCode, String message) {
     throw CustomException(
       type: CustomExceptionType.errorMessageFromServer,
       message: message,
       statusCode: statusCode,
     );
-  }
-
-  Future<dynamic> _onRequest(String endpoint,
-      {required Future<Response> Function(String url) fetch}) async {
-    try {
-      final url = '$baseUrl$endpoint';
-      final response = await fetch(url);
-      final data = _handleResponse(response);
-      return data;
-    } on CustomException {
-      rethrow;
-    } catch (e, s) {
-      _handleRestfulRequestException(e, s);
-    }
   }
 }

@@ -5,6 +5,7 @@ class ViewConstants {
   static const String invalidResponse = 'invalidResponse';
   static const String errorOpeningCamera = 'errorOpeningCamera';
   static const String cameraAccessDenied = 'cameraAccessDenied';
+  static const String issuePleaseTryAgain = 'issuePleaseTryAgain';
 
   // Info Messages
   static const String noEmailAppAvailable = "noEmailAppAvailable";
